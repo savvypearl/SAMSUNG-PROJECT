@@ -1,0 +1,44 @@
+stages:
+  - test
+  - docker-build
+  - terraform-validate
+  - terraform-plan
+
+test:
+  script:
+    - echo
+
+docker-build:
+  script:
+    - echo
+
+terraform-validate:
+  image:
+    name: hashicorp/terraform:light
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  before_script:
+    - rm -rf .terraform
+    - terraform --version
+    - cd terraform/environments/dev
+    - terraform init
+  script:
+    - terraform validate
+
+terraform-plan:
+  image:
+    name: hashicorp/terraform:light
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  before_script:
+    - cd terraform/environments/dev
+    - terraform init
+  script:
+    - terraform plan -out "plan.tfplan"
+  dependencies:
+    - terraform-validate
+  artifacts:
+    paths:
+      - plan.tfplan
